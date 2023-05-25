@@ -14,7 +14,6 @@ use DateTime;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Knp\Component\Pager\PaginatorInterface;
 use DateTimeImmutable;
 
 
@@ -45,11 +44,7 @@ class CsvImportController extends AbstractController
             ->getRepository(RaseResult::class)
             ->findAll();
 
-        /*$pagination = $paginator->paginate(
-            $allRaceResults,
-            $request->query->getInt('page', 1),
-            10
-        );*/
+
 
         $mediumRaceResults = $doctrine->getManager()
             ->getRepository(RaseResult::class)
@@ -72,7 +67,6 @@ class CsvImportController extends AbstractController
             'raceResults' => $raceResults,
             'averageFinishTime' => $averageFinishTime,
             'allRaceResults' => $allRaceResults,
-            //'pagination' => $pagination,
             'mediumAverageFinishTime' => $mediumAverageFinishTime,
 
         ]);
