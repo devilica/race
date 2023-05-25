@@ -3,3 +3,7 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+csv_import:
+    path: /csv/import
+    controller: App\Controller\CsvImportController::importAction

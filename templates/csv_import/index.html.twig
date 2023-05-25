@@ -1,0 +1,119 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Race Results
+{% endblock %}
+
+{% block body %}
+	<style>
+		.example-wrapper {
+			margin: 1em auto;
+			max-width: 800px;
+			width: 95%;
+			font: 18px / 1.5 sans-serif;
+		}
+		.example-wrapper code {
+			background: #F5F5F5;
+			padding: 2px 6px;
+		}
+	</style>
+
+	<div class="example-wrapper">
+		<h1>
+			<i class="fas fa-car"></i>
+			Welcome to Race Results!
+			<i class="fas fa-car"></i>
+		</h1>
+		<div style="margin-top: 20px">
+
+			{% set flashMessages = app.flashes('success') %}
+			{% if flashMessages|length > 0 %}
+				<div class="alert alert-success">
+					{{ flashMessages[0] }}
+				</div>
+			{% endif %}
+
+
+			<form action="{{ path('csv_import') }}" method="POST" enctype="multipart/form-data" style="margin-top: 20px">
+				{{ form_widget(form) }}
+				<button type="submit" class="btn btn-primary" style="margin-top: 20px">Import CSV</button>
+			</div>
+
+
+			<div style="margin-top: 20px">
+				{% if raceResults|length > 0 %}
+
+					<div>
+						<hr>
+						<h3>Race results for long distance
+							<i class="fas fa-car"></i>
+							<a href="/api" class="btn btn-success" type="button" style="margin-left:30px">Api Platform</a>
+
+
+						</h3>
+						<hr>
+						<span>
+							<b>Average finish time for long distance:</b>
+							{{ averageFinishTime|date('H:i:s')}}</span>
+					</div>
+					<table class="table">
+						<tr>
+							<th>Full name</th>
+							<th>Distance</th>
+							<th>Time</th>
+							<th>Age category</th>
+							<th>Overall placement</th>
+							<th>Category placement</th>
+						</tr>
+						{% for result in raceResults %}
+							<tr>
+								<td>{{ result.full_name }}</td>
+								<td>{{result.distance}}</td>
+								<td>{{result.time|date('H:i:s')}}</td>
+								<td>{{result.age_category}}</td>
+								<td>{{result.overall_placement}}</td>
+								<td>{{result.age_category_placement}}</td>
+							</tr>
+						{% endfor %}
+					</table>
+					<hr>
+					<h3>All imported race results
+						<i class="fas fa-car"></i>
+					</h3>
+					<hr>
+					<span>
+						<b>Average finish time for medium distance:</b>
+						{{ mediumAverageFinishTime|date('H:i:s')}}</span>
+
+
+					<table class="table">
+						<tr>
+							<th>Full name</th>
+							<th>Distance</th>
+							<th>Time</th>
+							<th>Age category</th>
+							<th>Overall placement</th>
+							<th>Category placement</th>
+						</tr>
+						{% for result in allRaceResults %}
+
+							<tr>
+								<td>{{ result.full_name }}</td>
+								<td>{{result.distance}}</td>
+								<td>{{result.time|date('H:i:s')}}</td>
+								<td>{{result.age_category}}</td>
+								<td>{{result.overall_placement}}</td>
+								<td>{{result.age_category_placement}}</td>
+							</tr>
+						{% endfor %}
+
+					</table>
+
+
+				{% endif %}
+
+			</div>
+		</form>
+
+
+	</div>
+{% endblock %}

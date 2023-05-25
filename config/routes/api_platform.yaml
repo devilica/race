@@ -1,0 +1,9 @@
+api_platform:
+    resource: .
+    type: api_platform
+    prefix: /api
+
+my_custom_route:
+  path: /my/custom/route
+  methods: [GET]
+  controller: App\Controller\CscImport::index
