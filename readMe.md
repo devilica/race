@@ -1,41 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Project Name</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      line-height: 1.5;
-    }
-    
-    h1 {
-      font-size: 24px;
-      color: #333;
-    }
-    
-    h2 {
-      font-size: 18px;
-      color: #555;
-    }
-    
-    code {
-      font-family: Consolas, monospace;
-      background-color: #f5f5f5;
-      padding: 2px 4px;
-      border-radius: 4px;
-    }
-    
-    pre {
-      background-color: #f5f5f5;
-      padding: 10px;
-      border-radius: 4px;
-      overflow-x: auto;
-    }
-  </style>
-</head>
-<body>
-  <h1>Project Name</h1>
+  <h1>Race Results</h1>
   
   <p>Short description or introduction to the project.</p>
   
@@ -117,5 +80,4 @@ php bin/console doctrine:migrations:migrate</code></pre>
   <p>Access the project in your browser by visiting the provided URL (usually <code>http://localhost:8000</code>).</p>
   
 
-</body>
-</html>
+
