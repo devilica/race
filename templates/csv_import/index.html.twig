@@ -50,10 +50,15 @@
 
 
 						</h3>
-						<hr>
 						<span>
-							<b>Average finish time for long distance:</b>
+							<b>Average finish time for long distance for
+								{{raceTitle}}
+								is:</b>
+
 							{{ averageFinishTime|date('H:i:s')}}</span>
+						<hr>
+
+
 					</div>
 					<table class="table">
 						<tr>
@@ -76,44 +81,78 @@
 						{% endfor %}
 					</table>
 					<hr>
-					<h3>All imported race results
+					<h3>Race results for medium distance
 						<i class="fas fa-car"></i>
+
 					</h3>
-					<hr>
 					<span>
-						<b>Average finish time for medium distance:</b>
+						<b>Average finish time for medium distance for
+							{{raceTitle}}
+							is:</b>
+
 						{{ mediumAverageFinishTime|date('H:i:s')}}</span>
+					<hr>
 
 
-					<table class="table">
+				</div>
+				<table class="table">
+					<tr>
+						<th>Full name</th>
+						<th>Distance</th>
+						<th>Time</th>
+						<th>Age category</th>
+					</tr>
+					{% for result in mediumRaceResults %}
 						<tr>
-							<th>Full name</th>
-							<th>Distance</th>
-							<th>Time</th>
-							<th>Age category</th>
-							<th>Overall placement</th>
-							<th>Category placement</th>
+							<td>{{ result.full_name }}</td>
+							<td>{{result.distance}}</td>
+							<td>{{result.time|date('H:i:s')}}</td>
+							<td>{{result.age_category}}</td>
 						</tr>
-						{% for result in allRaceResults %}
+					{% endfor %}
+				</table>
 
-							<tr>
-								<td>{{ result.full_name }}</td>
-								<td>{{result.distance}}</td>
-								<td>{{result.time|date('H:i:s')}}</td>
-								<td>{{result.age_category}}</td>
-								<td>{{result.overall_placement}}</td>
-								<td>{{result.age_category_placement}}</td>
-							</tr>
-						{% endfor %}
-
-					</table>
+				<hr>
+				<h3>All imported race results
+					<i class="fas fa-car"></i>
+				</h3>
+				<hr>
 
 
-				{% endif %}
+				<table class="table">
+					<tr>
+						<th>Full name</th>
+						<th>Distance</th>
+						<th>Time</th>
+						<th>Age category</th>
+						<th>Overall placement</th>
+						<th>Category placement</th>
+						<th>Race title</th>
+					</tr>
+					{% for result in allRaceResultsPagination %}
 
-			</div>
-		</form>
+						<tr>
+							<td>{{ result.full_name }}</td>
+							<td>{{result.distance}}</td>
+							<td>{{result.time|date('H:i:s')}}</td>
+							<td>{{result.age_category}}</td>
+							<td>{{result.overall_placement}}</td>
+							<td>{{result.age_category_placement}}</td>
+							<td>{{result.race.title}}</td>
+						</tr>
+					{% endfor %}
+
+				</table>
+				<div style=" display: flex; justify-content: center;">
+					{{ knp_pagination_render(allRaceResultsPagination) }}
+
+				</div>
 
 
-	</div>
-{% endblock %}
+			{% endif %}
+
+		</div>
+	</form>
+
+
+</div>{% endblock %}

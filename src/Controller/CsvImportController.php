@@ -2,7 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\RaseResult;
+use App\Entity\RaceResult;
+use App\Entity\Races;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,59 +16,49 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use DateTimeImmutable;
-
+use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 
 class CsvImportController extends AbstractController
 {
 
 
     #[Route('/', name: 'app_csv_import')]
-    public function index(Request $request, ManagerRegistry $doctrine)
+    public function index(Request $request, ManagerRegistry $doctrine, EntityManagerInterface $entityManager, PaginatorInterface $paginator)
     {
         $form = $this->createForm(CsvImportType::class);
 
-        $raceResults = $doctrine->getManager()
-            ->getRepository(RaseResult::class)
-            ->findBy(['distance' => 'long'], ['time' => 'ASC']);
+        $lastRace = $doctrine->getManager()->getRepository(Races::class)->findOneBy([], ['id' => 'DESC']);
 
-        $totalFinishTime = 0;
-        $numberOfResults = count($raceResults);
+        if ($lastRace) {
+            $raceResults = $doctrine->getManager()
+                ->getRepository(RaceResult::class)
+                ->findBy(['distance' => 'long', 'race' => $lastRace->getId()], ['time' => 'ASC']);
 
-        foreach ($raceResults as $raceResult) {
-            $finishTime = $raceResult->getTime();
-            $totalFinishTime += $finishTime->getTimestamp();
+            $mediumRaceResults = $doctrine->getManager()
+                ->getRepository(RaceResult::class)
+                ->findBy(['distance' => 'medium', 'race' => $lastRace->getId()], ['time' => 'ASC']);
+
         }
-
-        $averageFinishTime = $numberOfResults > 0 ? round($totalFinishTime / $numberOfResults) : 0;
-
         $allRaceResults = $doctrine->getManager()
-            ->getRepository(RaseResult::class)
+            ->getRepository(RaceResult::class)
             ->findAll();
 
-
-
-        $mediumRaceResults = $doctrine->getManager()
-            ->getRepository(RaseResult::class)
-            ->findBy(['distance' => 'medium']);
-
-        $mediumTotalFinishTime = 0;
-        $mediumNumberOfResults = count($mediumRaceResults);
-
-        foreach ($mediumRaceResults as $raceResult) {
-            $finishTime = $raceResult->getTime();
-            $mediumTotalFinishTime += $finishTime->getTimestamp();
-        }
-
-        $mediumAverageFinishTime = $mediumNumberOfResults > 0 ? round($mediumTotalFinishTime / $mediumNumberOfResults) : 0;
-
-
+        $allRaceResultsPagination = $paginator->paginate(
+            $allRaceResults,
+            $request->query->getInt('page', 1),
+            10
+        );
 
         return $this->render('csv_import/index.html.twig', [
             'form' => $form->createView(),
-            'raceResults' => $raceResults,
-            'averageFinishTime' => $averageFinishTime,
+            'raceResults' => $lastRace ? $raceResults : null,
+            'averageFinishTime' => $lastRace ? $lastRace->getAverageLongTime() : null,
             'allRaceResults' => $allRaceResults,
-            'mediumAverageFinishTime' => $mediumAverageFinishTime,
+            'mediumAverageFinishTime' => $lastRace ? $lastRace->getAverageMediumTime() : null,
+            'raceTitle' => $lastRace ? $lastRace->getTitle() : null,
+            'mediumRaceResults' => $lastRace ? $mediumRaceResults : null,
+            'allRaceResultsPagination' => $allRaceResultsPagination
 
         ]);
     }
@@ -78,6 +69,14 @@ class CsvImportController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+            $race = new Races();
+            $race->setDate(DateTimeImmutable::createFromFormat('U', time()));
+            $entityManager = $doctrine->getManager();
+            $entityManager->persist($race);
+            $entityManager->flush();
+
+
             $csvFile = $form->get('csvFile')->getData();
             $csvReader = Reader::createFromPath($csvFile->getPathname());
             $csvReader->setHeaderOffset(0);
@@ -112,13 +111,13 @@ class CsvImportController extends AbstractController
 
                 if (empty($errors)) {
 
-                    $result = new RaseResult();
+                    $result = new RaceResult();
                     $result->setFullName($fullName);
                     $result->setDistance($distance);
                     $result->setTime($time);
+                    $result->setRace($race);
                     $result->setAgeCategory($ageCategory);
                     $result->setCreatedAt($currentTime);
-                    $entityManager = $doctrine->getManager();
                     $entityManager->persist($result);
                     $entityManager->flush();
                 }
@@ -126,8 +125,8 @@ class CsvImportController extends AbstractController
             }
 
             $raceResults = $doctrine->getManager()
-                ->getRepository(RaseResult::class)
-                ->findBy(['distance' => 'long'], ['time' => 'ASC']);
+                ->getRepository(RaceResult::class)
+                ->findBy(['distance' => 'long', 'race' => $race->getId()], ['time' => 'ASC']);
             $ageCategoryPlacements = [];
 
             foreach ($raceResults as $key => $raceResult) {
@@ -147,6 +146,37 @@ class CsvImportController extends AbstractController
             $entityManager->flush();
 
 
+            $longRaceResults = $doctrine->getManager()
+                ->getRepository(RaceResult::class)
+                ->findBy(['distance' => 'long', 'race' => $race->getId()], ['time' => 'ASC']);
+            if (!empty($longRaceResults)) {
+                $longRaceTimes = array_map(function ($longRaceResult) {
+                    return $longRaceResult->getTime();
+                }, $longRaceResults);
+                $averageLongFinishTime = $this->calculateAverageTime($longRaceTimes);
+                $race->setAverageLongTime(DateTime::createFromFormat('H:i:s', $averageLongFinishTime));
+                $entityManager->persist($race);
+                $entityManager->flush();
+
+            }
+
+            $mediumRaceResults = $doctrine->getManager()
+                ->getRepository(RaceResult::class)
+                ->findBy(['distance' => 'medium', 'race' => $race->getId()]);
+            if (!empty($mediumRaceResults)) {
+                $mediumRaceTimes = array_map(function ($mediumRaceResult) {
+                    return $mediumRaceResult->getTime();
+                }, $mediumRaceResults);
+                $mediumAverageFinishTime = $this->calculateAverageTime($mediumRaceTimes);
+                $race->setAverageMediumTime(DateTime::createFromFormat('H:i:s', $mediumAverageFinishTime));
+                $entityManager->persist($race);
+                $entityManager->flush();
+            }
+            $race->setTitle('Race number ' . $race->getId());
+            $entityManager->persist($race);
+            $entityManager->flush();
+
+
             $session->getFlashBag()->add('success', 'CSV file was successfully imported.');
 
 
@@ -154,5 +184,25 @@ class CsvImportController extends AbstractController
 
         }
 
+
+    }
+
+    function calculateAverageTime(array $raceTimes): string
+    {
+        $numResults = count($raceTimes);
+
+        $totalSeconds = array_reduce($raceTimes, function ($carry, $raceTime) {
+            $timeParts = explode(':', $raceTime);
+            $hours = (int) $timeParts[0];
+            $minutes = (int) $timeParts[1];
+            $seconds = (int) $timeParts[2];
+
+            return $carry + ($hours * 3600) + ($minutes * 60) + $seconds;
+        }, 0);
+
+        $averageSeconds = $totalSeconds / $numResults;
+        $averageTime = gmdate('H:i:s', $averageSeconds);
+
+        return $averageTime;
     }
 }
