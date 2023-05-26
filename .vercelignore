@@ -1,14 +1,1 @@
-html
-css
-js
-css
-font
-image
-public/bundles
-/templates/race_results
-docker-compose.override.yml
-docker-compose.yml
 /vendor
-translations
-.env
-.git
