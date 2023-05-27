@@ -71,7 +71,6 @@ class CsvImportController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
 
             $race = new Races();
-            $race->setDate(DateTimeImmutable::createFromFormat('U', time()));
             $entityManager = $doctrine->getManager();
             $entityManager->persist($race);
             $entityManager->flush();
@@ -87,12 +86,14 @@ class CsvImportController extends AbstractController
                 $distance = $record['distance'];
                 $timeString = $record['time'];
                 $ageCategory = $record['ageCategory'];
+                $title = $record['title'];
+                $date = $record['date'];
 
                 $currentTime = DateTimeImmutable::createFromFormat('U', time());
 
                 $time = DateTime::createFromFormat('H:i:s', $timeString);
 
-                $errors = [];
+                /*$errors = [];
                 if (empty($fullName)) {
                     $errors[] = "Full Name is required in csv.";
                 }
@@ -108,6 +109,35 @@ class CsvImportController extends AbstractController
                 if (empty($ageCategory)) {
                     $errors[] = "Age category is required.";
                 }
+                if (empty($title)) {
+                    $errors = ["Race title is required"];
+                }
+                if (empty($date)) {
+                    $errors = ["Race date is required"];
+                }*/
+
+                $errors = [];
+
+                switch (true) {
+                    case empty($fullName):
+                        $errors[] = "Full Name is required in csv.";
+                        break;
+                    case !in_array($distance, ['long', 'medium']):
+                        $errors[] = "Invalid distance value, it can be long or medium.";
+                        break;
+                    case empty($timeString):
+                        $errors[] = "Time is required.";
+                        break;
+                    case empty($ageCategory):
+                        $errors[] = "Age category is required.";
+                        break;
+                    case empty($title):
+                        $errors[] = "Race title is required";
+                        break;
+                    case empty($date):
+                        $errors[] = "Race date is required";
+                        break;
+                }
 
                 if (empty($errors)) {
 
@@ -120,6 +150,20 @@ class CsvImportController extends AbstractController
                     $result->setCreatedAt($currentTime);
                     $entityManager->persist($result);
                     $entityManager->flush();
+
+                    $raceDate = DateTimeImmutable::createFromFormat('d.m.Y.', $date);
+                    if ($raceDate) {
+                        $race->setTitle($title);
+                        if ($raceDate) {
+                            $race->setDate($raceDate);
+                        } else {
+                            $race->setDate(DateTimeImmutable::createFromFormat('U', time()));
+                        }
+                        $entityManager->persist($race);
+                        $entityManager->flush();
+                    }
+
+
                 }
 
             }
@@ -172,9 +216,7 @@ class CsvImportController extends AbstractController
                 $entityManager->persist($race);
                 $entityManager->flush();
             }
-            $race->setTitle('Race number ' . $race->getId());
-            $entityManager->persist($race);
-            $entityManager->flush();
+
 
 
             $session->getFlashBag()->add('success', 'CSV file was successfully imported.');
