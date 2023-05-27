@@ -93,29 +93,6 @@ class CsvImportController extends AbstractController
 
                 $time = DateTime::createFromFormat('H:i:s', $timeString);
 
-                /*$errors = [];
-                if (empty($fullName)) {
-                    $errors[] = "Full Name is required in csv.";
-                }
-
-                if (!in_array($distance, ['long', 'medium'])) {
-                    $errors[] = "Invalid distance value, it can be long or medium.";
-                }
-
-                if (empty($timeString)) {
-                    $errors[] = "Time is required.";
-                }
-
-                if (empty($ageCategory)) {
-                    $errors[] = "Age category is required.";
-                }
-                if (empty($title)) {
-                    $errors = ["Race title is required"];
-                }
-                if (empty($date)) {
-                    $errors = ["Race date is required"];
-                }*/
-
                 $errors = [];
 
                 switch (true) {
