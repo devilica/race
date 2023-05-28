@@ -78,6 +78,8 @@ php bin/console doctrine:migrations:migrate</code></pre>
   <pre><code>symfony serve</code></pre>
   
   <p>Access the project in your browser by visiting the provided URL (usually <code>http://localhost:8000</code>).</p>
+
+  <p>There is csv file RaceResults.csv that you can import as an example.</p>
   
 
 
