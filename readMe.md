@@ -62,7 +62,7 @@
   
   <ol>
     <li>Create the database.</li>
-    <li>Update the database connection details in the <code>.env.local</code> file.</li>
+    <li>Update the database connection details in the <code>.env.local and .env</code> file.</li>
     <li>Run the following commands to set up the database and run any pending migrations:</li>
   </ol>
   
